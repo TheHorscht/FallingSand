@@ -1,0 +1,49 @@
+<html>
+<head>
+  <title>Falling Sand Game</title>
+  <style>
+    /* Some basic styling for the canvas element and the buttons */
+    canvas {
+      background-color: black;
+      user-select: none;
+    }
+    .button {
+      display: inline-block;
+      border: none;
+      padding: 5px 10px;
+      font-size: 16px;
+      cursor: pointer;
+      text-align: center;
+      text-decoration: none;
+      outline: none;
+      color: white;
+      background-color: blue;
+      border-radius: 5px;
+    }
+    .controls {
+      padding: 5px;
+    }
+    .button:hover {
+      background-color: #555;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="canvas" width="560" height="280"></canvas>
+  <div class="controls">
+    <div class="controls__buttons">
+      <button class="button" id="sandButton" style="background-color: yellow;">Sand</button>
+      <button class="button" id="waterButton" style="background-color: blue;">Water</button>
+      <button class="button" id="gasButton" style="background-color: green;">Gas</button>
+      <button class="button" id="solidButton" style="background-color: grey;">Solid</button>
+      <button class="button" id="eraserButton" style="background-color: black;">Eraser</button>
+    </div>
+    <div class="controls__brush-width">
+      <span>Brush Width: </span>
+      <input type="range" id="brushWidthSlider" min="1" max="20" step="1">
+      <span id="brushWidthValue"></span>
+    </div>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
