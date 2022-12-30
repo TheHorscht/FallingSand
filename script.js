@@ -6,6 +6,7 @@ const ctx = canvas.getContext('2d');
 const cellSize = 2;
 let brushWidth = 4;
 let tick = 0;
+const activeParticles = new Map();
 // Create the grid array to store the state of each cell
 let grid = [];
 function resetGrid() {
@@ -52,28 +53,38 @@ function drawLine(x1, y1, x2, y2, radius, setPixel) {
 function randi(min, max) {
   return min + Math.round(Math.random() * (max - min));
 }
+function setPixel(x, y, color) {
+  ctx.fillStyle = color;
+  ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+}
 class Particle {
   constructor(x, y, grid) {
     this._x = x;
     this._y = y;
+    this._prevX = x;
+    this._prevY = y;
     this._grid = grid;
     this._lastUpdateTick = 0;
+    this._awake = false;
+    this.wake();
+  }
+  savePosition() {
+    this._prevX = this._x;
+    this._prevY = this._y;
   }
   update() {}
   render() {}
-  // wake() {
-  //   activeParticles[this] = this;
-  // }
-  // sleep() {
-  //   activeParticles[this] = null;
-  // }
-  getParticleAt(x, y) {
-    return x >= 0 && 
-      x < this._grid.length && 
-      y >= 0 && 
-      y < this._grid[0].length && 
-      this._grid[x][y];
-    // return this._grid[x][y]
+  wake() {
+    if(!this._awake) {
+      this._awake = true;
+      activeParticles.set(this, this);
+    }
+  }
+  sleep() {
+    if(this._awake) {
+      this._awake = false;
+      activeParticles.delete(this);
+    }
   }
   canMove(dx, dy) {
     return this._x + dx >= 0 && 
@@ -84,16 +95,15 @@ class Particle {
       (this._grid[this._x + dx][this._y + dy] === 0 || !this._grid[this._x + dx][this._y + dy]);
   }
   moveIfCan(dx, dy) {
-    const particle = this.getParticleAt(this._x + dx, this._y + dy);
+    const particle = getParticle(this._x + dx, this._y + dy);
     if(particle) {
       particle.update();
     }
     if(this.canMove(dx, dy)) {
       removeParticle(this._x, this._y);
-      // this._grid[this._x][this._y] = 0;
+      wakeNeighbors(this._x, this._y);
       this._x += dx;
       this._y += dy;
-      // this._grid[this._x][this._y] = this;
       placeParticle(this._x, this._y, this);
       return { x: this._x, y: this._y };
     }
@@ -106,23 +116,33 @@ class SandParticle extends Particle {
     super(x, y, grid);
   }
   update() {
-    if(this._lastUpdateTick === tick) return false;
-    this._lastUpdateTick = tick;
-    if(!this.moveIfCan(0, 1)) {
-      const leftOrRight = randi(0, 1);
-      if(leftOrRight === 0) {
-        return this.moveIfCan(-1, 1);
-      } else {
-        return this.moveIfCan(1, 1);
+    if(this._lastUpdateTick === tick || !this._awake) return;
+    this.savePosition();
+    const moved = (() => {
+      this._lastUpdateTick = tick;
+      if(!this.moveIfCan(0, 1)) {
+        const leftOrRight = randi(0, 1);
+        if(leftOrRight === 0) {
+          return this.moveIfCan(-1, 1);// || this.moveIfCan(1, 1);
+        } else {
+          return this.moveIfCan(1, 1);// || this.moveIfCan(-1, 1);
+        }
+        // TODO What to do when it couldn't move in the desired direction? Try again in other?
       }
-      // return this.moveIfCan(-1, 1) || this.moveIfCan(1, 1);
+      // Return true if it moved
+      return true;
+    })();
+    if(moved) {
+      this.wake();
+      this.render();
+    } else {
+      this.sleep();
+      this.render();
     }
-    return true;
-    //this.moveIfCan(0, 1) || this.moveIfCan(-1, 1) || this.moveIfCan(1, 1);
   }
-  render(ctx, x, y, cellSize) {
-    ctx.fillStyle = 'yellow';
-    ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+  render() {
+    setPixel(this._prevX, this._prevY, 'black');
+    setPixel(this._x, this._y, 'yellow');
   }
 }
 const water = {
@@ -180,11 +200,16 @@ document.getElementById('brushWidthSlider').addEventListener('input', e => {
   brushWidth = e.target.value;
   brushWidthValue.innerText = brushWidth;
 });
-
+function getParticle(x, y) {
+  return x >= 0 && x < grid.length && y >= 0 && y < grid[0].length && grid[x][y];
+}
 function placeParticle(x, y, particle) {
   if(x > 0 && x < grid.length) {
     if(y > 0 && y < grid[0].length) {
-      grid[x][y] = particle || new currentMaterial(x, y, grid);
+      if(!getParticle(x, y)) {
+        grid[x][y] = particle || new currentMaterial(x, y, grid);
+        grid[x][y].wake();
+      }
     }
   }
 }
@@ -195,57 +220,30 @@ function removeParticle(x, y) {
     }
   }
 }
-
-// Define the update function
-function update() {
-  tick++;
-  if(mouse.isDown) {
-    // Add a new particle to the grid at the clicked location
-    // const placeParticle = (x, y) => {
-    //   if(x < 0 || x > grid.length || y < 0 || y > grid[0].length) return;
-    //   grid[x][y] = {
-    //     update() {},
-    //     render(ctx, x, y, cellSize) {
-    //       ctx.fillStyle = 'yellow';
-    //       ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
-    //     }
-    //   }
-    // };
-    // resetGrid();
-    drawLine(mouse.prevX, mouse.prevY, mouse.x, mouse.y, brushWidth, placeParticle);
-    mouse.prevX = mouse.x;
-    mouse.prevY = mouse.y;
-  }
-
-  for (let x = 0; x < grid.length; x++) {
-    for (let y = 0; y < grid[0].length; y++) {
-      const particle = grid[x][y];
-      if (particle) {
-        particle.update();
+function wakeNeighbors(cx, cy) {
+  for(let x = cx-1; x <= cx+1; x++) {
+    for(let y = cy-1; y <= cy+1; y++) {
+      const particle = getParticle(x, y);
+      if(particle) {
+        particle.wake();
       }
     }
   }
 }
-
-function render() {
-  // Clear the canvas
-  ctx.fillStyle = "#000";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  // Render the particles
-  for (let x = 0; x < grid.length; x++) {
-    for (let y = 0; y < grid[0].length; y++) {
-      const particle = grid[x][y];
-      if (particle) {
-        particle.render(ctx, x, y, cellSize);
-      }
-    }
+// Define the update function
+function update() {
+  tick++;
+  if(mouse.isDown) {
+    drawLine(mouse.prevX, mouse.prevY, mouse.x, mouse.y, brushWidth, placeParticle);
+    mouse.prevX = mouse.x;
+    mouse.prevY = mouse.y;
   }
+  activeParticles.forEach(particle => particle.update());
 }
 
 // Set up the game loop to update and render the game on each frame
 function gameLoop() {
   update();
-  render();
 }
 
 // setInterval(gameLoop, 1000); // 60 ticks per second
