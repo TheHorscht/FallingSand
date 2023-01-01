@@ -18,6 +18,31 @@ function resetGrid() {
   }
 }
 resetGrid();
+function loadTexture(url) {
+  const canvas = document.createElement('canvas');
+  document.body.appendChild(canvas);
+  const ctx = canvas.getContext('2d');
+  const img = new Image();
+  let data, w, h;
+  img.src = url;
+  img.addEventListener('load', () => {
+    w = img.width;
+    h = img.height;
+    canvas.width = w;
+    canvas.height = h;
+    ctx.drawImage(img, 0, 0);
+    data = ctx.getImageData(0, 0, w, h).data;
+  });
+  return {
+    getPixel(x, y) {
+      const r = data[(w * y + x) * 4], g = data[(w * y + x) * 4 + 1], b = data[(w * y + x) * 4 + 2];
+      return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+    }
+  }
+}
+const t = loadTexture('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAMAAAADCAYAAABWKLW/AAABhWlDQ1BJQ0MgcHJvZmlsZQAAKJF9kT1Iw0AcxV9TtaIVBTuIOGSoThakijhKFYtgobQVWnUwufRDaNKQpLg4Cq4FBz8Wqw4uzro6uAqC4AeIo5OToouU+L+k0CLGg+N+vLv3uHsHCPUyU82OCUDVLCMVj4nZ3IoYeEUQA+hFFF0SM/VEeiEDz/F1Dx9f7yI8y/vcn6NPyZsM8InEs0w3LOJ14ulNS+e8TxxiJUkhPiceN+iCxI9cl11+41x0WOCZISOTmiMOEYvFNpbbmJUMlXiKOKyoGuULWZcVzluc1XKVNe/JXxjMa8tprtMcQRyLSCAJETKq2EAZFiK0aqSYSNF+zMM/7PiT5JLJtQFGjnlUoEJy/OB/8LtbszAZdZOCMaDzxbY/RoHALtCo2fb3sW03TgD/M3CltfyVOjDzSXqtpYWPgP5t4OK6pcl7wOUOMPSkS4bkSH6aQqEAvJ/RN+WAwVugZ9XtrbmP0wcgQ10t3QAHh8BYkbLXPN7d3d7bv2ea/f0AfPFyqxtlO4sAAAAJcEhZcwAACxMAAAsTAQCanBgAAAAHdElNRQfmDB4MBDFFV6PIAAAAGXRFWHRDb21tZW50AENyZWF0ZWQgd2l0aCBHSU1QV4EOFwAAADBJREFUCNdj3LMi5z8jExvDv78/GJiY2PgZfn6+y8DIxMbAxPD/L4OAYijD72/PGAAY5Q4TcxcJ4wAAAABJRU5ErkJggg==');
+// const t = loadTexture('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH5gkRDgw2gO33KwAAAR9JREFUOMttk6GShjAMhPegggFRg0Kgj0e7V/lfEI9A1VSUqWHmBHy5wFxM28km2WzSr8/P9ypJsW+Vj1OxbzWNndataJkHrVsxH29OSWpi31qQJAuOfWsnBThJIkkhH6ckKb8qSjKQD8D2VLXMgxoP5J6P0xj56utWNI2dlnkwf8AR+1Z7qpZkT9X6Bgx9b4HsgNatSC4RdEmm+05cgwZvuojpg30LYAKXRxWXbBo7TTcL32Y+TuWtXC3sqV4tpPqYQj5Oa8feCH1rEd5ABPRGIAvFCE0DTxuVp7F7bCcYL6ykaw/o/z3z/wIwRG78irJAXmnAFGASiNqYojdVKsGKN4XwkTS8qSMoU6EaPt/S4y+wif4DecqIuqf6N3ZJv6jd9oo9Vr2/AAAAAElFTkSuQmCC');
+// const t = loadTexture('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAMAAAADCAIAAADZSiLoAAABhWlDQ1BJQ0MgcHJvZmlsZQAAKJF9kT1Iw0AcxV9TtaIVBTuIOGSoThakijhKFYtgobQVWnUwufRDaNKQpLg4Cq4FBz8Wqw4uzro6uAqC4AeIo5OToouU+L+k0CLGg+N+vLv3uHsHCPUyU82OCUDVLCMVj4nZ3IoYeEUQA+hFFF0SM/VEeiEDz/F1Dx9f7yI8y/vcn6NPyZsM8InEs0w3LOJ14ulNS+e8TxxiJUkhPiceN+iCxI9cl11+41x0WOCZISOTmiMOEYvFNpbbmJUMlXiKOKyoGuULWZcVzluc1XKVNe/JXxjMa8tprtMcQRyLSCAJETKq2EAZFiK0aqSYSNF+zMM/7PiT5JLJtQFGjnlUoEJy/OB/8LtbszAZdZOCMaDzxbY/RoHALtCo2fb3sW03TgD/M3CltfyVOjDzSXqtpYWPgP5t4OK6pcl7wOUOMPSkS4bkSH6aQqEAvJ/RN+WAwVugZ9XtrbmP0wcgQ10t3QAHh8BYkbLXPN7d3d7bv2ea/f0AfPFyqxtlO4sAAAAJcEhZcwAALiMAAC4jAXilP3YAAAAHdElNRQfmDB4LNCz8WO9nAAAAGXRFWHRDb21tZW50AENyZWF0ZWQgd2l0aCBHSU1QV4EOFwAAABpJREFUCNcFwQEBAAAIwyBu/84ThNAq4MxgD4DUBgGfAh6sAAAAAElFTkSuQmCC');
 function getDistance(p1, p2) {
   return Math.hypot(p2.x - p1.x, p2.y - p1.y);
 }
