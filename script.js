@@ -1,6 +1,4 @@
-// Get the canvas element
 const canvas = document.getElementById('canvas');
-// Get the canvas context
 const ctx = canvas.getContext('2d');
 // Set the size of each cell in the grid
 const cellSize = 2;
