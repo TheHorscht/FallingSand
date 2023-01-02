@@ -111,6 +111,7 @@ class Particle {
       this.sleep();
     }
     this.render();
+    return hasMoved;
   }
   render() {}
   wake() {
@@ -136,7 +137,18 @@ class Particle {
       (this._grid[newX][newY] === null || !this._grid[newX][newY]);
   }
   moveIfCan(dx, dy) {
-    getParticle(this._x + dx, this._y + dy)?.update();
+    let otherParticle = getParticle(this._x + dx, this._y + dy);
+    if(otherParticle) {
+      otherParticle.update();
+      otherParticle = getParticle(this._x + dx, this._y + dy);
+      if(otherParticle) {
+        if((otherParticle.density ?? 0) < (this.density ?? 0)) {
+          // const a = otherParticle == this;
+          this.swapPositionWith(dx, dy);
+          return true;
+        }
+      }
+    }
     if(this.canMove(dx, dy)) {
       this._grid[this._x][this._y] = null;
       setPixel(this._x, this._y, 'black');
@@ -147,6 +159,26 @@ class Particle {
       return { x: this._x, y: this._y };
     }
     return false;
+  }
+  swapPositionWith(dx, dy) {
+    const otherX = this._x + dx;
+    const otherY = this._y + dy;
+    const otherParticle = getParticle(otherX, otherY);
+    otherParticle.savePosition();
+    otherParticle._x = this._x;
+    otherParticle._y = this._y;
+    this.savePosition();
+    this._x = otherX;
+    this._y = otherY;
+
+    grid[this._x][this._y] = otherParticle;
+    grid[otherParticle._x][otherParticle._y] = this;
+    setPixel(this._x, this._y, otherParticle._color);
+    setPixel(otherParticle._x, otherParticle._y, this._color);
+    wakeNeighbors(otherParticle._x, otherParticle._y);
+
+    otherParticle.render();
+    this.render();
   }
   toString() { return `${this._x}_${this._y}` }
 }
@@ -159,6 +191,7 @@ function defineParticleType(name, buttonColor, particleColor, updateFn) {
       } else {
         this._color = particleColor;
       }
+      this._type = name;
     }
     _update = updateFn;
     render() {
@@ -185,6 +218,7 @@ const SandParticle = defineParticleType('Sand', 'yellow', (x, y) => t.getPixel(r
   }
   return true;
 });
+SandParticle.prototype.density = 10;
 // Particle definitions
 const WaterParticle = defineParticleType('Water', 'blue', 'blue', function() {
   if(!(this.moveIfCan(0, 1) ||
@@ -195,6 +229,7 @@ const WaterParticle = defineParticleType('Water', 'blue', 'blue', function() {
   }
   return true;
 });
+WaterParticle.prototype.density = 1;
 const GasParticle = defineParticleType('Gas', 'green', 'green', function() {
   if(!(this.moveIfCan(0, -1) || this.moveIfCan(-1, -1) || this.moveIfCan(1, -1))) {
     if(Math.random() < 0.2) {
