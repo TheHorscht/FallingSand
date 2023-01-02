@@ -1,3 +1,4 @@
+const info = document.querySelector('#info>span');
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 // Set the size of each cell in the grid
@@ -38,9 +39,13 @@ function loadTexture(url) {
     }
   }
 }
-const t = loadTexture('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAMAAAADCAYAAABWKLW/AAABhWlDQ1BJQ0MgcHJvZmlsZQAAKJF9kT1Iw0AcxV9TtaIVBTuIOGSoThakijhKFYtgobQVWnUwufRDaNKQpLg4Cq4FBz8Wqw4uzro6uAqC4AeIo5OToouU+L+k0CLGg+N+vLv3uHsHCPUyU82OCUDVLCMVj4nZ3IoYeEUQA+hFFF0SM/VEeiEDz/F1Dx9f7yI8y/vcn6NPyZsM8InEs0w3LOJ14ulNS+e8TxxiJUkhPiceN+iCxI9cl11+41x0WOCZISOTmiMOEYvFNpbbmJUMlXiKOKyoGuULWZcVzluc1XKVNe/JXxjMa8tprtMcQRyLSCAJETKq2EAZFiK0aqSYSNF+zMM/7PiT5JLJtQFGjnlUoEJy/OB/8LtbszAZdZOCMaDzxbY/RoHALtCo2fb3sW03TgD/M3CltfyVOjDzSXqtpYWPgP5t4OK6pcl7wOUOMPSkS4bkSH6aQqEAvJ/RN+WAwVugZ9XtrbmP0wcgQ10t3QAHh8BYkbLXPN7d3d7bv2ea/f0AfPFyqxtlO4sAAAAJcEhZcwAACxMAAAsTAQCanBgAAAAHdElNRQfmDB4MBDFFV6PIAAAAGXRFWHRDb21tZW50AENyZWF0ZWQgd2l0aCBHSU1QV4EOFwAAADBJREFUCNdj3LMi5z8jExvDv78/GJiY2PgZfn6+y8DIxMbAxPD/L4OAYijD72/PGAAY5Q4TcxcJ4wAAAABJRU5ErkJggg==');
-// const t = loadTexture('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH5gkRDgw2gO33KwAAAR9JREFUOMttk6GShjAMhPegggFRg0Kgj0e7V/lfEI9A1VSUqWHmBHy5wFxM28km2WzSr8/P9ypJsW+Vj1OxbzWNndataJkHrVsxH29OSWpi31qQJAuOfWsnBThJIkkhH6ckKb8qSjKQD8D2VLXMgxoP5J6P0xj56utWNI2dlnkwf8AR+1Z7qpZkT9X6Bgx9b4HsgNatSC4RdEmm+05cgwZvuojpg30LYAKXRxWXbBo7TTcL32Y+TuWtXC3sqV4tpPqYQj5Oa8feCH1rEd5ABPRGIAvFCE0DTxuVp7F7bCcYL6ykaw/o/z3z/wIwRG78irJAXmnAFGASiNqYojdVKsGKN4XwkTS8qSMoU6EaPt/S4y+wif4DecqIuqf6N3ZJv6jd9oo9Vr2/AAAAAElFTkSuQmCC');
-// const t = loadTexture('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAMAAAADCAIAAADZSiLoAAABhWlDQ1BJQ0MgcHJvZmlsZQAAKJF9kT1Iw0AcxV9TtaIVBTuIOGSoThakijhKFYtgobQVWnUwufRDaNKQpLg4Cq4FBz8Wqw4uzro6uAqC4AeIo5OToouU+L+k0CLGg+N+vLv3uHsHCPUyU82OCUDVLCMVj4nZ3IoYeEUQA+hFFF0SM/VEeiEDz/F1Dx9f7yI8y/vcn6NPyZsM8InEs0w3LOJ14ulNS+e8TxxiJUkhPiceN+iCxI9cl11+41x0WOCZISOTmiMOEYvFNpbbmJUMlXiKOKyoGuULWZcVzluc1XKVNe/JXxjMa8tprtMcQRyLSCAJETKq2EAZFiK0aqSYSNF+zMM/7PiT5JLJtQFGjnlUoEJy/OB/8LtbszAZdZOCMaDzxbY/RoHALtCo2fb3sW03TgD/M3CltfyVOjDzSXqtpYWPgP5t4OK6pcl7wOUOMPSkS4bkSH6aQqEAvJ/RN+WAwVugZ9XtrbmP0wcgQ10t3QAHh8BYkbLXPN7d3d7bv2ea/f0AfPFyqxtlO4sAAAAJcEhZcwAALiMAAC4jAXilP3YAAAAHdElNRQfmDB4LNCz8WO9nAAAAGXRFWHRDb21tZW50AENyZWF0ZWQgd2l0aCBHSU1QV4EOFwAAABpJREFUCNcFwQEBAAAIwyBu/84ThNAq4MxgD4DUBgGfAh6sAAAAAElFTkSuQmCC');
+const t = loadTexture('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAMAAAADCAYAAABWKLW/AAABhWlDQ1BJQ0MgcHJvZmlsZQAAKJF9kT1Iw\
+0AcxV9TtaIVBTuIOGSoThakijhKFYtgobQVWnUwufRDaNKQpLg4Cq4FBz8Wqw4uzro6uAqC4AeIo5OToouU+L+k0CLGg+N+vLv3uHsHCPUyU82OCUDVLCMVj4nZ3Io\
+YeEUQA+hFFF0SM/VEeiEDz/F1Dx9f7yI8y/vcn6NPyZsM8InEs0w3LOJ14ulNS+e8TxxiJUkhPiceN+iCxI9cl11+41x0WOCZISOTmiMOEYvFNpbbmJUMlXiKOKyoG\
+uULWZcVzluc1XKVNe/JXxjMa8tprtMcQRyLSCAJETKq2EAZFiK0aqSYSNF+zMM/7PiT5JLJtQFGjnlUoEJy/OB/8LtbszAZdZOCMaDzxbY/RoHALtCo2fb3sW03TgD\
+/M3CltfyVOjDzSXqtpYWPgP5t4OK6pcl7wOUOMPSkS4bkSH6aQqEAvJ/RN+WAwVugZ9XtrbmP0wcgQ10t3QAHh8BYkbLXPN7d3d7bv2ea/f0AfPFyqxtlO4sAAAAJc\
+EhZcwAACxMAAAsTAQCanBgAAAAHdElNRQfmDB4MBDFFV6PIAAAAGXRFWHRDb21tZW50AENyZWF0ZWQgd2l0aCBHSU1QV4EOFwAAADBJREFUCNdj3LMi5z8jExvDv78\
+/GJiY2PgZfn6+y8DIxMbAxPD/L4OAYijD72/PGAAY5Q4TcxcJ4wAAAABJRU5ErkJggg==');
 function getDistance(p1, p2) {
   return Math.hypot(p2.x - p1.x, p2.y - p1.y);
 }
@@ -95,7 +100,18 @@ class Particle {
     this._prevX = this._x;
     this._prevY = this._y;
   }
-  update() {}
+  update() {
+    if(this._lastUpdateTick === tick || !this._awake) return;
+    this._lastUpdateTick = tick;
+    this.savePosition();
+    const hasMoved = this._update();
+    if(hasMoved) {
+      this.wake();
+    } else {
+      this.sleep();
+    }
+    this.render();
+  }
   render() {}
   wake() {
     if(!this._awake) {
@@ -123,7 +139,9 @@ class Particle {
       particle.update();
     }
     if(this.canMove(dx, dy)) {
-      removeParticle(this._x, this._y);
+      // removeParticle(this._x, this._y);
+      this._grid[this._x][this._y] = 0;
+      setPixel(this._x, this._y, 'black');
       wakeNeighbors(this._x, this._y);
       this._x += dx;
       this._y += dy;
@@ -134,40 +152,67 @@ class Particle {
   }
   toString() { return `${this._x}_${this._y}` }
 }
-class SandParticle extends Particle {
-  constructor(x, y, grid) {
-    super(x, y, grid);
-  }
-  update() {
-    if(this._lastUpdateTick === tick || !this._awake) return;
-    this.savePosition();
-    const moved = (() => {
-      this._lastUpdateTick = tick;
-      if(!this.moveIfCan(0, 1)) {
-        const leftOrRight = randi(0, 1);
-        if(leftOrRight === 0) {
-          return this.moveIfCan(-1, 1);// || this.moveIfCan(1, 1);
-        } else {
-          return this.moveIfCan(1, 1);// || this.moveIfCan(-1, 1);
-        }
-        // TODO What to do when it couldn't move in the desired direction? Try again in other?
-      }
-      // Return true if it moved
-      return true;
-    })();
-    if(moved) {
-      this.wake();
-      this.render();
-    } else {
-      this.sleep();
-      this.render();
+function defineParticleType(update) {
+  return class extends Particle {
+    constructor(x, y, grid) {
+      super(x, y, grid);
+      this._color = t.getPixel(randi(0, 2), randi(0, 2));
     }
-  }
-  render() {
-    setPixel(this._prevX, this._prevY, 'black');
-    setPixel(this._x, this._y, 'yellow');
-  }
+    _update = update;
+    render() {
+      setPixel(this._prevX, this._prevY, 'black');
+      setPixel(this._x, this._y, this._color);
+    }
+  };
 }
+const NewParticle = defineParticleType(function() {
+  if(!this.moveIfCan(0, 1)) {
+    const leftOrRight = randi(0, 1);
+    if(leftOrRight === 0) {
+      return this.moveIfCan(-1, 1);// || this.moveIfCan(1, 1);
+    } else {
+      return this.moveIfCan(1, 1);// || this.moveIfCan(-1, 1);
+    }
+    // TODO What to do when it couldn't move in the desired direction? Try again in other?
+  }
+  // Return true if it moved
+  return true;
+});
+// class SandParticle extends Particle {
+//   constructor(x, y, grid) {
+//     super(x, y, grid);
+//     this._color = t.getPixel(randi(0, 2), randi(0, 2));
+//   }
+//   update() {
+//     if(this._lastUpdateTick === tick || !this._awake) return;
+//     this.savePosition();
+//     const moved = (() => {
+//       this._lastUpdateTick = tick;
+//       if(!this.moveIfCan(0, 1)) {
+//         const leftOrRight = randi(0, 1);
+//         if(leftOrRight === 0) {
+//           return this.moveIfCan(-1, 1);// || this.moveIfCan(1, 1);
+//         } else {
+//           return this.moveIfCan(1, 1);// || this.moveIfCan(-1, 1);
+//         }
+//         // TODO What to do when it couldn't move in the desired direction? Try again in other?
+//       }
+//       // Return true if it moved
+//       return true;
+//     })();
+//     if(moved) {
+//       this.wake();
+//       this.render();
+//     } else {
+//       this.sleep();
+//       this.render();
+//     }
+//   }
+//   render() {
+//     setPixel(this._prevX, this._prevY, 'black');
+//     setPixel(this._x, this._y, this._color);
+//   }
+// }
 const water = {
   color: 'blue',
   update(grid, updatedGrid) {
@@ -190,15 +235,17 @@ const solid = {
   color: 'grey',
   update() {},
 };
-let currentMaterial = SandParticle;
+let currentMaterial = NewParticle;
 let isMouseDown = false;
 const mouse = {
   isDown: false,
+  button: 0,
   prevX: 0, prevY: 0,
   x: 0, y: 0,
 }
 canvas.addEventListener('mousedown', event => {
   mouse.isDown = true;
+  mouse.button = event.button;
   // Calculate the x and y coordinates of the click relative to the canvas
   mouse.prevX = mouse.x;
   mouse.prevY = mouse.y;
@@ -210,6 +257,7 @@ canvas.addEventListener('mousemove', event => {
   mouse.y = Math.round(event.offsetY / cellSize);
 });
 canvas.addEventListener('mouseup', () => mouse.isDown = false);
+canvas.addEventListener("contextmenu", e => e.preventDefault());
 // Add event listeners to the buttons to change the current material
 document.getElementById('sandButton').addEventListener('click', () => currentMaterial = SandParticle);
 document.getElementById('waterButton').addEventListener('click', () => currentMaterial = water);
@@ -239,7 +287,11 @@ function placeParticle(x, y, particle) {
 function removeParticle(x, y) {
   if(x > 0 && x < grid.length) {
     if(y > 0 && y < grid[0].length) {
+      const particle = grid[x][y];
+      activeParticles.delete(particle);
+      setPixel(x, y, 'black');
       grid[x][y] = 0;
+      wakeNeighbors(x, y);
     }
   }
 }
@@ -257,11 +309,16 @@ function wakeNeighbors(cx, cy) {
 function update() {
   tick++;
   if(mouse.isDown) {
-    drawLine(mouse.prevX, mouse.prevY, mouse.x, mouse.y, brushWidth, placeParticle);
+    drawLine(mouse.prevX, mouse.prevY, mouse.x, mouse.y, brushWidth, mouse.button == 0 ? placeParticle : removeParticle);
     mouse.prevX = mouse.x;
     mouse.prevY = mouse.y;
   }
-  activeParticles.forEach(particle => particle.update());
+  let count = 0;
+  activeParticles.forEach(particle => {
+    count++;
+    particle.update();
+  });
+  info.innerHTML = `Active particles: ${count}`;
 }
 
 // Set up the game loop to update and render the game on each frame
