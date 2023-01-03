@@ -231,9 +231,11 @@ const WaterParticle = defineParticleType('Water', 'blue', 'blue', function() {
 });
 WaterParticle.prototype.density = 1;
 const GasParticle = defineParticleType('Gas', 'green', 'green', function() {
-  if(!(this.moveIfCan(0, -1) || this.moveIfCan(-1, -1) || this.moveIfCan(1, -1))) {
-    if(Math.random() < 0.2) {
-      Math.random() <= 0.5 ? this.moveIfCan(-1, 0) : this.moveIfCan(1, 0);
+  if(!this.moveIfCan(randi(-1, 1), -1)) {
+    if(!(this.moveIfCan(randi(-1, -2), -1) || this.moveIfCan(randi(1, 2), -1))) {
+      Math.random() <= 0.5 ? this.moveIfCan(randi(-1, -2), 0) : this.moveIfCan(randi(1, 2), 0);
+      return true;
+      // return Math.random() <= 0.5 ? this.moveIfCan(randi(-1, -2), 0) : this.moveIfCan(randi(1, 2), 0);
     }
   }
   return true;
@@ -241,6 +243,7 @@ const GasParticle = defineParticleType('Gas', 'green', 'green', function() {
 const SolidParticle = defineParticleType('Solid', 'grey', 'grey', function() {
   return false;
 });
+SolidParticle.prototype.density = 100;
 let currentMaterial = SandParticle;
 let isMouseDown = false;
 const mouse = {
