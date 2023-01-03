@@ -7,7 +7,7 @@
       background-color: black;
       user-select: none;
     }
-    .button {
+    button {
       display: inline-block;
       border: none;
       padding: 5px 10px;
@@ -17,14 +17,19 @@
       text-decoration: none;
       outline: none;
       color: white;
-      background-color: blue;
+      background-color: black;
       border-radius: 5px;
+      margin-right: 5px;
+      user-select: none;
+    }
+    button:hover {
+      background-color: #555;
     }
     .controls {
       padding: 5px;
     }
-    .button:hover {
-      background-color: #555;
+    .controls__buttons {
+      font-size: 0px;
     }
   </style>
 </head>
@@ -32,13 +37,19 @@
   <canvas id="canvas" width="560" height="280"></canvas>
   <div class="controls">
     <div class="controls__buttons">
-      <button class="button" id="startButton" style="background-color: black;">Start</button>
-      <button class="button" id="stepButton" style="background-color: black;">Step</button>
-      <button class="button" id="stopButton" style="background-color: black;">Stop</button>
+      <button id="startButton">Start</button>
+      <button id="stepButton">Step</button>
+      <button id="stopButton">Stop</button>
+      <button id="debugRenderButton" title="Paints all particles on the grid as white">Debug-Render</button>
+      <button id="wakeAllButton">Wake all</button>
+      <button id="clearAllButton">Clear all</button>
+    </div>
+    <div class="controls__update-frequency">
+      <label>Update Frequency (ticks/second): <input type="range" id="updateFrequencySlider" min="1" max="60" step="1"></label>
+      <span id="updateFrequencyValue"></span>
     </div>
     <div class="controls__brush-width">
-      <span>Brush Width: </span>
-      <input type="range" id="brushWidthSlider" min="1" max="20" step="1">
+      <label>Brush Width: <input type="range" id="brushWidthSlider" min="1" max="20" step="1"></label>
       <span id="brushWidthValue"></span>
     </div>
   </div>
