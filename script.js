@@ -88,6 +88,7 @@ class Particle {
     this._prevY = y;
     this._grid = grid;
     this._lastUpdateTick = 0;
+    this._lastSuccessfulUpdate = tick;
     this._awake = false;
     this.wake();
   }
@@ -101,8 +102,10 @@ class Particle {
     this.savePosition();
     const hasMoved = this._update();
     if(hasMoved) {
+      this._lastSuccessfulUpdate = tick;
       this.wake();
-    } else {
+    } else if(!(tick - this._lastSuccessfulUpdate <= 60)) {
+      // Go to sleep if there hasn't been a successful update in the last 60 ticks
       this.sleep();
     }
     this.render();
@@ -222,9 +225,7 @@ SandParticle.prototype.density = 10;
 const WaterParticle = defineParticleType('Water', 'blue', 'blue', function() {
   if(!this.moveIfCan(0, 1)) {
     if(!(this.moveIfCan(randi(-1, -2), 1) || this.moveIfCan(randi(1, 2), 1))) {
-      Math.random() <= 0.5 ? this.moveIfCan(randi(-1, -2), 0) : this.moveIfCan(randi(1, 2), 0);
-      return true;
-      // return Math.random() <= 0.5 ? this.moveIfCan(randi(-1, -2), 0) : this.moveIfCan(randi(1, 2), 0);
+      return Math.random() <= 0.5 ? this.moveIfCan(randi(-1, -2), 0) : this.moveIfCan(randi(1, 2), 0);
     }
   }
   return true;
@@ -233,9 +234,7 @@ WaterParticle.prototype.density = 1;
 const GasParticle = defineParticleType('Gas', 'green', 'green', function() {
   if(!this.moveIfCan(randi(-1, 1), -1)) {
     if(!(this.moveIfCan(randi(-1, -2), -1) || this.moveIfCan(randi(1, 2), -1))) {
-      Math.random() <= 0.5 ? this.moveIfCan(randi(-1, -2), 0) : this.moveIfCan(randi(1, 2), 0);
-      return true;
-      // return Math.random() <= 0.5 ? this.moveIfCan(randi(-1, -2), 0) : this.moveIfCan(randi(1, 2), 0);
+      return Math.random() <= 0.5 ? this.moveIfCan(randi(-1, -2), 0) : this.moveIfCan(randi(1, 2), 0);
     }
   }
   return true;
