@@ -262,9 +262,9 @@ const AntsParticle = defineParticleType('Ants', '#bf3333', '#bf3333', function()
     return true;
     // Then left or right
   } else if(!(Math.random() <= 0.5 ? this.moveIfCan(-randX, 0) : this.moveIfCan(randX, 0))) {
-    if(isParticle(this._x - randX, this._y, 'Solid')) {
+    if(isParticle(this._x - randX, this._y, ['Solid', 'Wood'])) {
       return this.moveIfCan(-randX, -randY);
-    } else if(isParticle(this._x + randX, this._y, 'Solid')) {
+    } else if(isParticle(this._x + randX, this._y, ['Solid', 'Wood'])) {
       return this.moveIfCan(randX, -randY);
     }
   }
@@ -380,7 +380,11 @@ function getParticle(x, y) {
 }
 function isParticle(x, y, type) {
   const particle = getParticle(x, y);
-  return particle?._type == type;
+  if(Array.isArray(type)) {
+    return type.includes(particle?._type);
+  } else {
+    return particle?._type == type;
+  }
 }
 function placeParticle(x, y, particle) {
   if(x >= 0 && x < gridWidth) {
@@ -472,6 +476,10 @@ registerReaction(AntsParticle, FireParticle, {
 registerReaction(AntsParticle, WaterParticle, {
   chance: 10,
   result1: WaterParticle
+})
+registerReaction(AntsParticle, WoodParticle, {
+  chance: 2,
+  result1: AntsParticle
 })
 function react() {
   for(let x = 0; x < gridWidth; x++) {
