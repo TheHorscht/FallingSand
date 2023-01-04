@@ -185,8 +185,10 @@ class Particle {
   }
   toString() { return `${this._x}_${this._y}` }
 }
+let classID = 2;
 function defineParticleType(name, buttonColor, particleColor, updateFn) {
   const newParticleClass = class extends Particle {
+    static ID = (classID <<= 1);
     constructor(x, y, grid) {
       super(x, y, grid);
       if(typeof particleColor == 'function') {
@@ -207,7 +209,7 @@ function defineParticleType(name, buttonColor, particleColor, updateFn) {
   button.style.backgroundColor = buttonColor;
   button.innerText = name;
   button.addEventListener('click', () => currentMaterial = newParticleClass);
-  document.querySelector('.controls__buttons').appendChild(button);
+  document.querySelector('.materials__buttons').appendChild(button);
   return newParticleClass;
 }
 const SandParticle = defineParticleType('Sand', '#bca970', (x, y) => t.getPixel(randi(0, 2), randi(0, 2)), function() {
@@ -240,11 +242,19 @@ const GasParticle = defineParticleType('Gas', 'green', 'green', function() {
   }
   return true;
 });
-const SolidParticle = defineParticleType('Solid', 'grey', 'grey', function() {
+const SmokeParticle = defineParticleType('Smoke', '#686868', '#686868', function() {
+  if(!this.moveIfCan(randi(-1, 1), -1)) {
+    if(!(this.moveIfCan(randi(-1, -2), -1) || this.moveIfCan(randi(1, 2), -1))) {
+      return Math.random() <= 0.5 ? this.moveIfCan(randi(-1, -2), 0) : this.moveIfCan(randi(1, 2), 0);
+    }
+  }
+  return true;
+});
+const SolidParticle = defineParticleType('Solid', '#c3c3c3', '#c3c3c3', function() {
   return false;
 });
 SolidParticle.prototype.density = 10;
-const AntsParticle = defineParticleType('Ants', 'red', 'red', function() {
+const AntsParticle = defineParticleType('Ants', '#bf3333', '#bf3333', function() {
   const randX = randi(1, 2);
   const randY = 1; //;randi(1, 1);
   // Try moving down
@@ -261,16 +271,15 @@ const AntsParticle = defineParticleType('Ants', 'red', 'red', function() {
   return false;
 });
 AntsParticle.prototype.density = 4;
-
-const reactions = {
-  ["Solid"]: {
-    ["Water"]: {
-      chance: 1,
-      result1: GasParticle,
-      result2: GasParticle,
-    }
-  }
-};
+const WoodParticle = defineParticleType('Wood', '#762828', '#762828', function() {
+  return false;
+});
+WoodParticle.prototype.density = 10;
+const FireParticle = defineParticleType('Fire', 'red', 'red', function() {
+  this._color = ['yellow', 'orange', 'red'][randi(0, 2)];
+  return true;
+});
+FireParticle.prototype.density = 10;
 
 let currentMaterial = SandParticle;
 let isMouseDown = false;
@@ -395,6 +404,10 @@ function removeParticle(x, y) {
     }
   }
 }
+function replaceParticle(x, y, newParticle) {
+  removeParticle(x, y);
+  placeParticle(x, y, newParticle);
+}
 function wakeNeighbors(cx, cy) {
   for(let x = cx-1; x <= cx+1; x++) {
     for(let y = cy-1; y <= cy+1; y++) {
@@ -416,29 +429,87 @@ function update() {
   info.innerHTML = `Active particles: ${count}`;
 }
 
+const reactions = {};
+function createPair(particleType1, particleType2) {
+  return (particleType1?.ID ?? particleType1?.constructor.ID ?? 1) | (particleType2?.ID ?? particleType2?.constructor.ID ?? 1);
+}
+function registerReaction(particleType1, particleType2, reaction) {
+  reactions[createPair(particleType1, particleType2)] = reaction;
+}
+registerReaction(FireParticle, WaterParticle, {
+  chance: 1000,
+  result1: GasParticle,
+  result2: GasParticle,
+});
+registerReaction(SolidParticle, WaterParticle, {
+  chance: 10,
+  result1: GasParticle,
+  result2: GasParticle,
+})
+registerReaction(FireParticle, WoodParticle, {
+  chance: 50,
+  result1: FireParticle,
+  result2: FireParticle,
+})
+registerReaction(FireParticle, WaterParticle, {
+  chance: 1000,
+  result1: SmokeParticle,
+  result2: SmokeParticle,
+})
+registerReaction(FireParticle, null, {
+  chance: 10,
+  result1: [SmokeParticle, 10],
+})
+registerReaction(GasParticle, null, {
+  chance: 1,
+})
+registerReaction(SmokeParticle, null, {
+  chance: 1,
+})
+registerReaction(AntsParticle, FireParticle, {
+  chance: 1000,
+})
+registerReaction(AntsParticle, WaterParticle, {
+  chance: 10,
+  result1: WaterParticle
+})
 function react() {
   for(let x = 0; x < gridWidth; x++) {
     for(let y = 0; y < gridHeight; y++) {
       const particle1 = getParticle(x, y);
       if(!particle1) continue;
-      let reaction1 = reactions[particle1._type];
       for(let x2 = x-1; x2 <= x+1; x2++) {
         for(let y2 = y-1; y2 <= y+1; y2++) {
           const particle2 = getParticle(x2, y2);
-          if(!particle2) continue;
-          if(reaction1) {
-            const reaction2 = reaction1[particle2._type];
-            if(reaction2 && randi(1, 100) <= reaction2.chance) {
-              removeParticle(x, y);
-              placeParticle(x, y, new reaction2.result1(x, y, grid));
-            }
-          } else {
-            const reaction2 = reactions[particle2._type];
-            if(reaction2) {
-              reaction1 = reaction2[particle1._type];
-              if(reaction1 && randi(1, 100) <= reaction1.chance) {
+          const reactionKey = createPair(particle1, particle2);
+          const reaction = reactions[reactionKey];
+          if(reaction) {
+            if(reaction && randi(1, 1000) <= reaction.chance) {
+              if(reaction.result1) {
+                if(typeof(reaction.result1) == 'function') {
+                  replaceParticle(x, y, new reaction.result1(x, y, grid));
+                } else {
+                  if(randi(1, 100) <= reaction.result1[1]) {
+                    replaceParticle(x, y, new reaction.result1[0](x, y, grid));
+                  } else {
+                    removeParticle(x, y);
+                  }
+                }
+              } else {
                 removeParticle(x, y);
-                placeParticle(x, y, new reaction1.result1(x, y, grid));
+              }
+              if(reaction.result2) {
+                if(typeof(reaction.result2) == 'function') {
+                  replaceParticle(x, y, new reaction.result2(x, y, grid));
+                } else {
+                  if(randi(1, 100) <= reaction.result2[1]) {
+                    replaceParticle(x, y, new reaction.result2[0](x, y, grid));
+                  } else {
+                    removeParticle(x, y);
+                  }
+                }
+              } else {
+                removeParticle(x2, y2);
               }
             }
           }
