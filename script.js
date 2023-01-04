@@ -1,3 +1,4 @@
+const Color = net.brehaut.Color;
 const info = document.querySelector('#info>span');
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
@@ -80,6 +81,9 @@ function drawLine(x1, y1, x2, y2, radius, placeParticle) {
 function randi(min, max) {
   return min + Math.round(Math.random() * (max - min));
 }
+function randf(min, max) {
+  return min + Math.random() * (max - min);
+}
 class Particle {
   constructor(x, y, grid) {
     this._x = x;
@@ -89,12 +93,16 @@ class Particle {
     this._grid = grid;
     this._lastUpdateTick = 0;
     this._lastSuccessfulUpdate = tick;
+    this._remove = false;
     this._awake = false;
     this.wake();
   }
   savePosition() {
     this._prevX = this._x;
     this._prevY = this._y;
+  }
+  markForRemoval() {
+    this._remove = true;
   }
   update() {
     if(this._lastUpdateTick === tick || !this._awake) return;
@@ -256,7 +264,7 @@ const SolidParticle = defineParticleType('Solid', '#c3c3c3', '#c3c3c3', function
 SolidParticle.prototype.density = 10;
 const AntsParticle = defineParticleType('Ants', '#bf3333', '#bf3333', function() {
   const randX = randi(1, 2);
-  const randY = 1; //;randi(1, 1);
+  const randY = 1;
   // Try moving down
   if(this.moveIfCan(0, 1)) {
     return true;
@@ -280,6 +288,75 @@ const FireParticle = defineParticleType('Fire', 'red', 'red', function() {
   return true;
 });
 FireParticle.prototype.density = 10;
+const TestParticle = defineParticleType('Test', 'cyan', 'cyan', function() {
+  if(!this._color2) {
+    this._color2 = true;
+    this._color = Color('cyan').saturateByAmount(randf(-0.5, 0)).toCSS();
+  }
+  this._vx ??= 0;
+  this._vy ??= 0;
+  this._dx ??= 0;
+  this._dy ??= 0;
+  this._angle = this._angle ?? randf(0, Math.PI * 2);
+  this._angularVelocity = this._angularVelocity ?? 0;
+  if(this._angularVelocity < Math.PI && this._angularVelocity > -Math.PI) {
+    this._angularVelocity += randf(-0.01, 0.01);
+  }
+  this._angle += this._angularVelocity;
+  this._vx = Math.cos(this._angle) * 0.5;
+  this._vy = Math.sin(this._angle) * 0.5;
+  let moveX = 0, moveY = 0;
+  this._dx += this._vx;
+  this._dy += this._vy;
+  if(Math.abs(this._dx) >= 1) {
+    moveX = Math.round(this._dx);
+    this._dx -= moveX;
+  }
+  if(Math.abs(this._dy) >= 1) {
+    moveY = Math.round(this._dy);
+    this._dy -= moveY;
+  }
+  return this.moveIfCan(moveX, moveY);
+});
+TestParticle.prototype.density = 10;
+const GOLParticle = defineParticleType('GOL', 'purple', 'purple', function() {
+  if(this._lastCheckTick === tick) return;
+  this.__proto__.spawnNewParticleIfConditionsMet ??= function(x, y) {
+    let neighborCount = 0;
+    if(this._lastCheckTick === tick) return;
+    for(let x2 = x-1; x2 <= x+1; x2++) {
+      for(let y2 = y-1; y2 <= y+1; y2++) {
+        const p = getParticle(x2, y2);
+        if(p && p._spawnedTick !== tick && isParticle(x2, y2, 'GOL')) neighborCount++;
+      }
+    }
+    if(neighborCount === 3) {
+      return placeParticle(x, y, new this.__proto__.constructor(x, y, this._grid));
+    }
+  };
+  let neighborCount = 0;
+  for(let x = this._x-1; x <= this._x+1; x++) {
+    for(let y = this._y-1; y <= this._y+1; y++) {
+      const p = getParticle(x, y);
+      if(p) {
+        if(p !== this && p._spawnedTick !== tick && isParticle(x, y, 'GOL')) {
+          neighborCount++;
+        }
+      } else if(x >= 0 && x < gridWidth && y >= 0 && y < gridHeight) {
+        // Check if there are 3 GOL particles nearby for the other particle
+        const newParticle = this.spawnNewParticleIfConditionsMet(x, y);
+        if(newParticle) {
+          newParticle._spawnedTick = tick;
+        }
+      }
+    }
+  }
+  if(!(neighborCount === 2 || neighborCount === 3)) {
+    this.markForRemoval();
+  }
+  return true;
+});
+GOLParticle.prototype.density = 10;
 
 let currentMaterial = SandParticle;
 let isMouseDown = false;
@@ -387,15 +464,18 @@ function isParticle(x, y, type) {
   }
 }
 function placeParticle(x, y, particle) {
+  let p;
   if(x >= 0 && x < gridWidth) {
     if(y >= 0 && y < gridHeight) {
       if(!getParticle(x, y)) {
-        grid[x][y] = particle || new currentMaterial(x, y, grid);
-        grid[x][y].wake();
-        grid[x][y].render();
+        p = particle || new currentMaterial(x, y, grid);
+        p.wake();
+        p.render();
+        grid[x][y] = p;
       }
     }
   }
+  return p;
 }
 function removeParticle(x, y) {
   if(x >= 0 && x < gridWidth) {
@@ -429,6 +509,11 @@ function update() {
   activeParticles.forEach(particle => {
     count++;
     particle.update();
+  });
+  activeParticles.forEach(particle => {
+    if(particle._remove) {
+      removeParticle(particle._x, particle._y);
+    }
   });
   info.innerHTML = `Active particles: ${count}`;
 }
