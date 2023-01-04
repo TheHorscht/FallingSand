@@ -115,6 +115,7 @@ class Particle {
   wake() {
     if(!this._awake) {
       this._awake = true;
+      this._lastSuccessfulUpdate = tick;
       activeParticles.set(this, this);
     }
   }
@@ -230,7 +231,7 @@ const WaterParticle = defineParticleType('Water', 'blue', 'blue', function() {
   }
   return true;
 });
-WaterParticle.prototype.density = 1;
+WaterParticle.prototype.density = 5;
 const GasParticle = defineParticleType('Gas', 'green', 'green', function() {
   if(!this.moveIfCan(randi(-1, 1), -1)) {
     if(!(this.moveIfCan(randi(-1, -2), -1) || this.moveIfCan(randi(1, 2), -1))) {
@@ -242,7 +243,35 @@ const GasParticle = defineParticleType('Gas', 'green', 'green', function() {
 const SolidParticle = defineParticleType('Solid', 'grey', 'grey', function() {
   return false;
 });
-SolidParticle.prototype.density = 100;
+SolidParticle.prototype.density = 10;
+const AntsParticle = defineParticleType('Ants', 'red', 'red', function() {
+  const randX = randi(1, 2);
+  const randY = 1; //;randi(1, 1);
+  // Try moving down
+  if(this.moveIfCan(0, 1)) {
+    return true;
+    // Then left or right
+  } else if(!(Math.random() <= 0.5 ? this.moveIfCan(-randX, 0) : this.moveIfCan(randX, 0))) {
+    if(isParticle(this._x - randX, this._y, 'Solid')) {
+      return this.moveIfCan(-randX, -randY);
+    } else if(isParticle(this._x + randX, this._y, 'Solid')) {
+      return this.moveIfCan(randX, -randY);
+    }
+  }
+  return false;
+});
+AntsParticle.prototype.density = 4;
+
+const reactions = {
+  ["Solid"]: {
+    ["Water"]: {
+      chance: 1,
+      result1: GasParticle,
+      result2: GasParticle,
+    }
+  }
+};
+
 let currentMaterial = SandParticle;
 let isMouseDown = false;
 const mouse = {
@@ -282,7 +311,7 @@ canvas.addEventListener('mousemove', event => {
 canvas.addEventListener('mouseup', () => mouse.isDown = false);
 canvas.addEventListener("contextmenu", e => e.preventDefault());
 document.getElementById('startButton').addEventListener('click', () => paused = false);
-document.getElementById('stepButton').addEventListener('click', update);
+document.getElementById('stepButton').addEventListener('click', () => { update(); react(); });
 document.getElementById('stopButton').addEventListener('click', () => paused = true);
 document.getElementById('debugRenderButton').addEventListener('click', () => {
   for (let x = 0; x < gridWidth; x++) {
@@ -340,6 +369,10 @@ function getParticle(x, y) {
     return grid[x][y];
   }
 }
+function isParticle(x, y, type) {
+  const particle = getParticle(x, y);
+  return particle?._type == type;
+}
 function placeParticle(x, y, particle) {
   if(x >= 0 && x < gridWidth) {
     if(y >= 0 && y < gridHeight) {
@@ -383,6 +416,38 @@ function update() {
   info.innerHTML = `Active particles: ${count}`;
 }
 
+function react() {
+  for(let x = 0; x < gridWidth; x++) {
+    for(let y = 0; y < gridHeight; y++) {
+      const particle1 = getParticle(x, y);
+      if(!particle1) continue;
+      let reaction1 = reactions[particle1._type];
+      for(let x2 = x-1; x2 <= x+1; x2++) {
+        for(let y2 = y-1; y2 <= y+1; y2++) {
+          const particle2 = getParticle(x2, y2);
+          if(!particle2) continue;
+          if(reaction1) {
+            const reaction2 = reaction1[particle2._type];
+            if(reaction2 && randi(1, 100) <= reaction2.chance) {
+              removeParticle(x, y);
+              placeParticle(x, y, new reaction2.result1(x, y, grid));
+            }
+          } else {
+            const reaction2 = reactions[particle2._type];
+            if(reaction2) {
+              reaction1 = reaction2[particle1._type];
+              if(reaction1 && randi(1, 100) <= reaction1.chance) {
+                removeParticle(x, y);
+                placeParticle(x, y, new reaction1.result1(x, y, grid));
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
 let lastUpdate = Date.now();
 function gameLoop() {
   if(mouse.isDown) {
@@ -394,6 +459,7 @@ function gameLoop() {
   if(!paused && (Date.now() - lastUpdate >= 1000 / updateFrequency)) {
     lastUpdate = Date.now();
     update();
+    react();
   }
   // info.innerText = `${mouse.x}, ${mouse.y}`;
   requestAnimationFrame(gameLoop);
