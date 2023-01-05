@@ -241,7 +241,16 @@ const WaterParticle = defineParticleType('Water', 'blue', 'blue', function() {
   return true;
 });
 WaterParticle.prototype.density = 5;
-const GasParticle = defineParticleType('Gas', 'green', 'green', function() {
+const AcidParticle = defineParticleType('Acid', '#00ff00', '#00ff00', function() {
+  if(!this.moveIfCan(0, 1)) {
+    if(!(this.moveIfCan(randi(-1, -2), 1) || this.moveIfCan(randi(1, 2), 1))) {
+      return Math.random() <= 0.5 ? this.moveIfCan(randi(-1, -2), 0) : this.moveIfCan(randi(1, 2), 0);
+    }
+  }
+  return true;
+});
+AcidParticle.prototype.density = 5;
+const GasParticle = defineParticleType('Gas', '#54d154', () => ['#00c657', '#00cc5a', '#20c75f'][randi(0,2)], function() {
   if(!this.moveIfCan(randi(-1, 1), -1)) {
     if(!(this.moveIfCan(randi(-1, -2), -1) || this.moveIfCan(randi(1, 2), -1))) {
       return Math.random() <= 0.5 ? this.moveIfCan(randi(-1, -2), 0) : this.moveIfCan(randi(1, 2), 0);
@@ -257,7 +266,7 @@ const SmokeParticle = defineParticleType('Smoke', '#686868', '#686868', function
   }
   return true;
 });
-SmokeParticle.prototype.density = 100;
+SmokeParticle.prototype.density = 2;
 const SolidParticle = defineParticleType('Solid', '#c3c3c3', '#c3c3c3', function() {
   return false;
 });
@@ -287,7 +296,7 @@ const FireParticle = defineParticleType('Fire', 'red', 'red', function() {
   this._color = ['yellow', 'orange', 'red'][randi(0, 2)];
   return true;
 });
-FireParticle.prototype.density = 10;
+FireParticle.prototype.density = 1;
 const TestParticle = defineParticleType('Test', 'cyan', 'cyan', function() {
   if(!this._color2) {
     this._color2 = true;
@@ -527,8 +536,28 @@ function registerReaction(particleType1, particleType2, reaction) {
 }
 registerReaction(FireParticle, WaterParticle, {
   chance: 1000,
+  result1: SmokeParticle,
+  result2: SmokeParticle,
+});
+registerReaction(AcidParticle, SolidParticle, {
+  chance: 100,
   result1: GasParticle,
   result2: GasParticle,
+});
+registerReaction(AcidParticle, WoodParticle, {
+  chance: 100,
+  result1: GasParticle,
+  result2: GasParticle,
+});
+registerReaction(AcidParticle, SandParticle, {
+  chance: 100,
+  result1: GasParticle,
+  result2: GasParticle,
+});
+registerReaction(AcidParticle, WaterParticle, {
+  chance: 10,
+  result1: WaterParticle,
+  result2: WaterParticle,
 });
 registerReaction(FireParticle, WoodParticle, {
   chance: 50,
