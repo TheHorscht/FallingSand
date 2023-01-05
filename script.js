@@ -530,11 +530,6 @@ registerReaction(FireParticle, WaterParticle, {
   result1: GasParticle,
   result2: GasParticle,
 });
-registerReaction(SolidParticle, WaterParticle, {
-  chance: 10,
-  result1: GasParticle,
-  result2: GasParticle,
-})
 registerReaction(FireParticle, WoodParticle, {
   chance: 50,
   result1: FireParticle,
