@@ -354,7 +354,7 @@ const GOLParticle = defineParticleType('GOL', 'purple', 'purple', function() {
   if(!(neighborCount === 2 || neighborCount === 3)) {
     this.markForRemoval();
   }
-  return true;
+  return false;
 });
 GOLParticle.prototype.density = 10;
 
