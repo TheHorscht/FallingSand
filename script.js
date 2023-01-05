@@ -571,6 +571,11 @@ registerReaction(FireParticle, GasParticle, {
   result1: FireParticle,
   result2: FireParticle,
 })
+registerReaction(GOLParticle, WoodParticle, {
+  chance: 1000,
+  result1: FireParticle,
+  result2: FireParticle,
+})
 function react() {
   for(let x = 0; x < gridWidth; x++) {
     for(let y = 0; y < gridHeight; y++) {
