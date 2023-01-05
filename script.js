@@ -149,8 +149,7 @@ class Particle {
       otherParticle.update();
       otherParticle = getParticle(this._x + dx, this._y + dy);
       if(otherParticle) {
-        if((otherParticle.density ?? 0) < (this.density ?? 0)) {
-          // const a = otherParticle == this;
+        if((otherParticle.density ?? 0) < (this.density ?? 0) && randi(1, 100) <= 30) {
           this.swapPositionWith(dx, dy);
           return true;
         }
@@ -258,6 +257,7 @@ const SmokeParticle = defineParticleType('Smoke', '#686868', '#686868', function
   }
   return true;
 });
+SmokeParticle.prototype.density = 100;
 const SolidParticle = defineParticleType('Solid', '#c3c3c3', '#c3c3c3', function() {
   return false;
 });
