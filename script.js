@@ -1,5 +1,8 @@
 const Color = net.brehaut.Color;
 const info = document.querySelector('#info>span');
+/**
+ *  @type HTMLCanvasElement
+*/
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 const cellSize = 4; // Set the size of each cell in the grid
@@ -10,6 +13,12 @@ let tick = 0;
 const activeParticles = new Map();
 const gridWidth = canvas.width / cellSize;
 const gridHeight = canvas.height / cellSize;
+const imageData = ctx.createImageData(gridWidth, gridHeight);
+canvas.style.width = `${canvas.width}px`;
+canvas.style.height = `${canvas.height}px`;
+canvas.style.imageRendering = 'pixelated';
+canvas.width /= cellSize;
+canvas.height /= cellSize;
 // Create the grid array to store the state of each cell
 let grid = [];
 function resetGrid() {
@@ -413,7 +422,6 @@ document.getElementById('debugRenderButton').addEventListener('click', () => {
     for (let y = 0; y < gridHeight; y++) {
       if(grid[x][y]) {
         paintPixel(x, y, 'white');
-        // grid[x][y].update();
       }
     }
   }
@@ -422,7 +430,6 @@ document.getElementById('wakeAllButton').addEventListener('click', () => {
   for (let x = 0; x < gridWidth; x++) {
     for (let y = 0; y < gridHeight; y++) {
       if(grid[x][y]) {
-        // paintPixel(x, y, 'white');
         grid[x][y].wake();
         grid[x][y].update();
       }
@@ -433,11 +440,10 @@ document.getElementById('clearAllButton').addEventListener('click', () => {
   for (let x = 0; x < gridWidth; x++) {
     for (let y = 0; y < gridHeight; y++) {
       grid[x][y] = null;
-      activeParticles.clear();
-      ctx.fillStyle = 'black';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      paintPixel(x, y, 'black');
     }
   }
+  activeParticles.clear();
 });
 
 const brushWidthValue = document.getElementById('brushWidthValue');
@@ -455,9 +461,21 @@ document.getElementById('updateFrequencySlider').addEventListener('input', e => 
   updateFrequencyValue.innerText = updateFrequency;
 });
 
+const colorLookup = {};
 function paintPixel(x, y, color) {
-  ctx.fillStyle = color;
-  ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+  if(!colorLookup[color]) {
+    const c = Color(color);
+    colorLookup[color] = [
+      Math.floor(c.getRed() * 255),
+      Math.floor(c.getGreen() * 255),
+      Math.floor(c.getBlue() * 255)
+    ];
+  }
+  const [ r, g, b ] = colorLookup[color];
+  imageData.data[(y * gridWidth + x) * 4] = r; // R
+  imageData.data[(y * gridWidth + x) * 4 + 1] = g; // G
+  imageData.data[(y * gridWidth + x) * 4 + 2] = b; // B
+  imageData.data[(y * gridWidth + x) * 4 + 3] = 0xFF; // A
 }
 function getParticle(x, y) {
   if(x >= 0 && x < gridWidth && y >= 0 && y < gridHeight) {
@@ -524,6 +542,7 @@ function update() {
       removeParticle(particle._x, particle._y);
     }
   });
+  ctx.putImageData(imageData, 0, 0);
   info.innerHTML = `Active particles: ${count}`;
 }
 
